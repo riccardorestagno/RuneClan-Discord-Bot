@@ -13,9 +13,13 @@ Dependencies
 Supported Python versions: 3.6.0+ 
 
 discord.py (https://pypi.python.org/pypi/discord.py/) 
+
 BeautifulSoup (https://www.crummy.com/software/BeautifulSoup/)
+
 urllib.request (included in Python 3.6+ default library)
+
 asyncio (included in Python 3.6+ default library)
+
 itertools (included in Python 3.6+ default library)
 
 
