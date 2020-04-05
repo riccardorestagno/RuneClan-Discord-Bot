@@ -21,6 +21,7 @@ Usage
 =======
 
 Add RuneClan bot to your discord server: https://discordapp.com/oauth2/authorize?client_id=292458395280080907&scope=bot&permissions=0
+
 Sample usage: http://imgur.com/a/1ouSX
 
 
