@@ -433,22 +433,22 @@ async def get_skills_of_the_month_hiscores():
 async def get_bots_commands():
     await channel.send("""RuneClan Discord bot commands:
 
-"setclan [Clan Name]": Sets the clan you wish to search for on runeclan 
+"!setclan [Clan Name]": Sets the clan you wish to search for on runeclan 
 
-"help!": Prints everything that you're seeing right now
-"hiscores top [x]": Prints clans overall hiscores (default: top 15)
-"todays hiscores top [x]": Prints clans overall hiscores for today (default: top 10)
-"competitions": Lists the currently active competitions on RuneClan
-"competitions hiscores top [x]": Shows the hiscores for all active clan competitions  (default: top 5 for each skill) 
-"competitions time": Tell you how much time is remaining in the active competitions listed on RuneClan
-"clan info": Prints the clan info listed on RuneClan 
-"key ranks": Lists the clans key ranks
-"events top [x]": Prints the clan event log as seen on RuneClan (default: 10 most recent)
-"achievements top [x]": Prints the clan achievement log as seen on RuneClan (default: 10 most recent)
-"set next event: [event]": Records a customizable event that can be printed later (can be cleared by leaving [event] empty)
-"next event": Prints the customized event that has been previously set
-"set upcoming events: [events]": Records customizable events that can be printed later (can be cleared by leaving [events] empty)
-"upcoming events": Prints the customized events that have been previously set
+"!help": Prints everything that you're seeing right now
+"!hiscores top [x]": Prints clans overall hiscores (default: top 15)
+"!todays hiscores top [x]": Prints clans overall hiscores for today (default: top 10)
+"!competitions": Lists the currently active competitions on RuneClan
+"!competitions hiscores top [x]": Shows the hiscores for all active clan competitions  (default: top 5 for each skill) 
+"!competitions time": Tell you how much time is remaining in the active competitions listed on RuneClan
+"!clan info": Prints the clan info listed on RuneClan 
+"!key ranks": Lists the clans key ranks
+"!events top [x]": Prints the clan event log as seen on RuneClan (default: 10 most recent)
+"!achievements top [x]": Prints the clan achievement log as seen on RuneClan (default: 10 most recent)
+"!set next event: [event]": Records a customizable event that can be printed later (can be cleared by leaving [event] empty)
+"!next event": Prints the customized event that has been previously set
+"!set upcoming events: [events]": Records customizable events that can be printed later (can be cleared by leaving [events] empty)
+"!upcoming events": Prints the customized events that have been previously set
 
 Things to note:
   1. The "top [x]" feature is optional, and the default value is used if not entered.
@@ -491,9 +491,9 @@ async def on_message(message):
     if not list_of_clan_server_tuples:
         list_of_clan_server_tuples = open_external_file()
 
-    if sent_message.startswith("setclan"):
+    if sent_message.startswith("!setclan"):
         discord_server_name = str(message.guild)
-        clan_name = sent_message.split("setclan")[1].strip().replace(" ", "_")
+        clan_name = sent_message.split("!setclan")[1].strip().replace(" ", "_")
 
         if discord_server_name == "None":
             await channel.send('This bot is not meant to work in private chat. Please enter a command on a channel of a server that this bot has joined. Use the command "!help" for more info.')
@@ -504,7 +504,7 @@ async def on_message(message):
             if discord_server_name not in chain(*list_of_clan_server_tuples):
                 list_of_clan_server_tuples.append((discord_server_name, clan_name))
                 with open(stored_clan_tuples, 'a') as output_file:
-                    output_file.writelines(f'{discord_server_name},{clan_name}\n')
+                    output_file.write(f'{discord_server_name}, {clan_name}\n')
             else:
                 file = open(stored_clan_tuples, "r")
                 lines = file.readlines()
