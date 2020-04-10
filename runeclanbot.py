@@ -1,32 +1,45 @@
 import discord
 from itertools import chain
 from os import environ
-from urllib.request import urlopen
 
 from helper_methods import *
 
-
 client = discord.Client()
-text_files_path = environ["RUNECLANBOT_TEXT_FILES_PATH"]
 
-list_of_clan_server_tuples = []
+text_files_path = environ["RUNECLANBOT_TEXT_FILES_PATH"]
 stored_clan_tuples = f"{text_files_path}\\ClanServerTuples.txt"
 arrow = u"\u2192"
+
+
+class RuneClanBot:
+
+    channel = None
+    clan_name = ""
+    discord_server_name = ""
+    list_of_clan_server_tuples = []
+    sent_message = ""
+
+    def __init__(self, channel, clan_name, discord_server_name, list_of_clan_server_tuples, sent_message):
+        self.channel = channel
+        self.clan_name = clan_name
+        self.discord_server_name = discord_server_name
+        self.list_of_clan_server_tuples = list_of_clan_server_tuples
+        self.sent_message = sent_message
 
 
 @client.event
 async def get_clan_event_log():
 
-    soup = soup_session("http://www.runeclan.com/clan/" + clan_name)
+    soup = soup_session("http://www.runeclan.com/clan/" + RuneClanBot.clan_name)
 
     events = ""
     events_counter = 0
     event_list_end = False
 
-    list_count_requested = get_requested_list_count(sent_message, 40, 10)
+    list_count_requested = get_requested_list_count(RuneClanBot.sent_message, 40, 10)
 
     if list_count_requested[1]:
-        await channel.send(list_count_requested[1])
+        await RuneClanBot.channel.send(list_count_requested[1])
         return
 
     events_to_print = list_count_requested[0]
@@ -43,24 +56,24 @@ async def get_clan_event_log():
     events = events.replace("!", " " + arrow + " ")
 
     if event_list_end:
-        events = "Only " + str(events_counter) + " events are currently recorded on " + clan_name.replace("_", " ") + "'s RuneClan page:\n\n" + events
+        events = "Only " + str(events_counter) + " events are currently recorded on " + RuneClanBot.clan_name.replace("_", " ") + "'s RuneClan page:\n\n" + events
 
-    await channel.send(events)
+    await RuneClanBot.channel.send(events)
 
 
 @client.event
 async def get_clan_achievements():
 
-    soup = soup_session("http://www.runeclan.com/clan/" + clan_name)
+    soup = soup_session("http://www.runeclan.com/clan/" + RuneClanBot.clan_name)
 
     achievements = ""
-    clan_name_to_print = clan_name.replace("_", " ")
+    clan_name_to_print = RuneClanBot.clan_name.replace("_", " ")
     index = 0
     total_achievements_displayed = 0
-    list_count_requested = get_requested_list_count(sent_message, 40, 10)
+    list_count_requested = get_requested_list_count(RuneClanBot.sent_message, 40, 10)
 
     if list_count_requested[1]:
-        await channel.send(list_count_requested[1])
+        await RuneClanBot.channel.send(list_count_requested[1])
         return
 
     achievements_to_print = list_count_requested[0]
@@ -82,22 +95,22 @@ async def get_clan_achievements():
     if total_achievements_displayed != achievements_to_print:
         achievements = "Only " + str(total_achievements_displayed) + " clan achievements are currently recorded on " + clan_name_to_print + "'s RuneClan page:\n\n" + achievements
 
-    await channel.send(achievements)
+    await RuneClanBot.channel.send(achievements)
 
 
 @client.event
 async def get_clan_hiscores():
 
-    soup = soup_session("http://www.runeclan.com/clan/" + clan_name + "/hiscores")
+    soup = soup_session("http://www.runeclan.com/clan/" + RuneClanBot.clan_name + "/hiscores")
 
-    clan_name_to_print = clan_name.replace("_", " ")
+    clan_name_to_print = RuneClanBot.clan_name.replace("_", " ")
     table_cell = 0
     list_to_print = ""
 
-    list_count_requested = get_requested_list_count(sent_message, 25, 15)
+    list_count_requested = get_requested_list_count(RuneClanBot.sent_message, 25, 15)
 
     if list_count_requested[1]:
-        await channel.send(list_count_requested[1])
+        await RuneClanBot.channel.send(list_count_requested[1])
         return
 
     rows_to_print = list_count_requested[0]
@@ -114,45 +127,45 @@ async def get_clan_hiscores():
 
     list_to_print = clan_name_to_print + "'s Overall Hiscores:\n\n" + list_to_print
 
-    await channel.send(list_to_print)
+    await RuneClanBot.channel.send(list_to_print)
 
 
 @client.event
 async def get_key_ranks():
 
-    soup = soup_session("http://www.runeclan.com/clan/" + clan_name)
+    soup = soup_session("http://www.runeclan.com/clan/" + RuneClanBot.clan_name)
 
     list_to_print = ""
 
     for names in soup.find_all(attrs={'class': 'clan_ownerbox'}):
         list_to_print += (names.text[2:] + " " + arrow + " " + names('img')[0]['alt'] + "\n")
 
-    await channel.send(list_to_print)
+    await RuneClanBot.channel.send(list_to_print)
 
 
 @client.event
 async def get_clan_info():
 
-    soup = soup_session("http://www.runeclan.com/clan/" + clan_name)
+    soup = soup_session("http://www.runeclan.com/clan/" + RuneClanBot.clan_name)
 
-    list_to_print = clan_name.replace("_", " ") + " - Clan Info:\n"
+    list_to_print = RuneClanBot.clan_name.replace("_", " ") + " - Clan Info:\n"
 
     for clan_info in soup.find_all('span', attrs={'class': 'clan_subtext'}):
         list_to_print += clan_info.text + " " + clan_info.next_sibling + "\n"  # next sibling prints out untagged text
 
-    await channel.send(list_to_print)
+    await RuneClanBot.channel.send(list_to_print)
 
 
 @client.event
 async def get_todays_hiscores():
 
-    soup = soup_session("http://www.runeclan.com/clan/" + clan_name + "/xp-tracker")
+    soup = soup_session("http://www.runeclan.com/clan/" + RuneClanBot.clan_name + "/xp-tracker")
 
     todays_hiscores = ""
-    list_count_requested = get_requested_list_count(sent_message, 40, 10)
+    list_count_requested = get_requested_list_count(RuneClanBot.sent_message, 40, 10)
 
     if list_count_requested[1]:
-        await channel.send(list_count_requested[1])
+        await RuneClanBot.channel.send(list_count_requested[1])
         return
 
     rows_to_print = list_count_requested[0]
@@ -163,7 +176,7 @@ async def get_todays_hiscores():
         row = row_cell.find_all('td')
 
         if "Clan Total" == row[1].text:
-            todays_hiscores += clan_name.replace("_", " ") + "'s Total Xp for Today: " + row[2].text + " xp\n\n"
+            todays_hiscores += RuneClanBot.clan_name.replace("_", " ") + "'s Total Xp for Today: " + row[2].text + " xp\n\n"
             continue
 
         # Prevents row duplication.
@@ -175,44 +188,45 @@ async def get_todays_hiscores():
         if int(row[0].text) == rows_to_print:
             break
 
-    await channel.send(todays_hiscores)
+    await RuneClanBot.channel.send(todays_hiscores)
 
 
 @client.event
 async def get_skills_of_the_month_time_remaining():
 
-    soup = soup_session("http://www.runeclan.com/clan/" + clan_name +"/competitions")
+    soup = soup_session("http://www.runeclan.com/clan/" + RuneClanBot.clan_name + "/competitions")
 
-    competition_rows = get_active_competition_rows(clan_name)
+    competition_rows = get_active_competition_rows(RuneClanBot.clan_name)
     row_index = 0
     time_left = ""
 
     if competition_rows == 0:
-        await channel.send(clan_name.replace("_", " ") + " has no active competitions at this time.")
+        await RuneClanBot.channel.send(RuneClanBot.clan_name.replace("_", " ") + " has no active competitions at this time.")
     else:
         for table in soup.find_all('table')[4:]:
             row = table.find_all('td')
+
         while competition_rows > 0:
             if row[row_index+2].find('span').text == "active":
                 time_left += "The currently active " + row[row_index+1].text + " XP competition has " + row[row_index+4].text[:-6] + " remaining!\n"
             competition_rows -= 1
             row_index += 5
-        await channel.send(time_left)
+
+        await RuneClanBot.channel.send(time_left)
 
 
 @client.event
 async def get_skills_of_the_month():
-    
-    envision = "http://www.runeclan.com/clan/" + clan_name + "/competitions"
-    page = urlopen(envision)
-    soup = BeautifulSoup(page, "html.parser")
-    no_of_rows = get_active_competition_rows()
-    clan_name_to_print = clan_name.replace("_", " ")
+
+    soup = soup_session("http://www.runeclan.com/clan/" + RuneClanBot.clan_name + "/competitions")
+
+    no_of_rows = get_active_competition_rows(RuneClanBot.clan_name)
+    clan_name_to_print = RuneClanBot.clan_name.replace("_", " ")
     row_index = 0
     skills_to_print = ""
-    
-    if get_active_competition_rows() == 0:
-        await channel.send(clan_name_to_print + " has no active competitions at this time.")
+
+    if no_of_rows == 0:
+        await RuneClanBot.channel.send(clan_name_to_print + " has no active competitions at this time.")
     else:
         for table in soup.find_all('table')[4:]:
             for row_cell in soup.find_all('tr'):
@@ -222,25 +236,24 @@ async def get_skills_of_the_month():
                 skills_to_print += row[row_index+1].text + ", "
             no_of_rows -= 1
             row_index += 5
-            
-        await channel.send(skills_to_print[:-2])
-        page.close()
+
+        await RuneClanBot.channel.send(skills_to_print[:-2])
 
 
 @client.event
 async def get_skills_of_the_month_hiscores():
 
-    soup = soup_session("http://www.runeclan.com/clan/" + clan_name + "/competitions")
+    soup = soup_session("http://www.runeclan.com/clan/" + RuneClanBot.clan_name + "/competitions")
 
     table = soup.find_all('td', {'class': 'competition_td competition_name'})
-    skills_of_the_month = get_skills_in_clan_competition(clan_name)
-    row_count = get_active_competition_rows(clan_name)
-    clan_name_to_print = clan_name.replace("_", " ")
+    skills_of_the_month = get_skills_in_clan_competition(RuneClanBot.clan_name)
+    row_count = get_active_competition_rows(RuneClanBot.clan_name)
+    clan_name_to_print = RuneClanBot.clan_name.replace("_", " ")
 
-    list_count_requested = get_requested_list_count(sent_message, 10, 5)
+    list_count_requested = get_requested_list_count(RuneClanBot.sent_message, 10, 5)
 
     if list_count_requested[1]:
-        await channel.send(list_count_requested[1])
+        await RuneClanBot.channel.send(list_count_requested[1])
         return
 
     rows_to_print = list_count_requested[0]
@@ -251,8 +264,8 @@ async def get_skills_of_the_month_hiscores():
     player_rank_count = 0
     skill_header_count = 0
     skill_count = 0
-    if get_active_competition_rows(clan_name) == 0:
-        await channel.send(clan_name_to_print + " has no active competitions at this time.")
+    if get_active_competition_rows(RuneClanBot.clan_name) == 0:
+        await RuneClanBot.channel.send(clan_name_to_print + " has no active competitions at this time.")
     else:
         for row in table:
             for link in row.find_all('a', href=True):
@@ -286,16 +299,16 @@ async def get_skills_of_the_month_hiscores():
                 list_to_print += str(row) + "\n\n"
 
             skills += 1
-            
+
         try:
-            await channel.send(list_to_print)
+            await RuneClanBot.channel.send(list_to_print)
         except:
-            await channel.send("Character limit exceeded. Please reduce the amount of ranks you wish to search for.")
+            await RuneClanBot.channel.send("Character limit exceeded. Please reduce the amount of ranks you wish to search for.")
 
 
 @client.event
 async def get_bots_commands():
-    await channel.send("""RuneClan Discord bot commands:
+    await RuneClanBot.channel.send("""RuneClan Discord bot commands:
 
 "!setclan [Clan Name]": Sets the clan you wish to search for on runeclan 
 
@@ -323,11 +336,6 @@ Things to note:
 
 @client.event
 async def on_message(message):
-    global channel
-    global clan_name
-    global discord_server_name
-    global list_of_clan_server_tuples
-    global sent_message
 
     list_of_commands = {
         "!sotm": get_skills_of_the_month,
@@ -344,27 +352,27 @@ async def on_message(message):
         "!clan info": get_clan_info
     }
 
-    channel = message.channel
-    sent_message = message.content.replace("'", "")
+    RuneClanBot.channel = message.channel
+    RuneClanBot.sent_message = message.content.replace("'", "")
 
-    if sent_message.lower() == "!help":
+    if RuneClanBot.sent_message.lower() == "!help":
         await get_bots_commands()
 
-    if not list_of_clan_server_tuples:
-        list_of_clan_server_tuples = open_external_file(stored_clan_tuples)
+    if not RuneClanBot.list_of_clan_server_tuples:
+        RuneClanBot.list_of_clan_server_tuples = open_external_file(stored_clan_tuples)
 
-    if sent_message.lower().startswith("!setclan"):
+    if RuneClanBot.sent_message.lower().startswith("!setclan"):
         discord_server_name = str(message.guild)
-        clan_name = re.split("!setclan", sent_message, flags=re.IGNORECASE)[1].strip().replace(" ", "_")
+        clan_name = re.split("!setclan", RuneClanBot.sent_message, flags=re.IGNORECASE)[1].strip().replace(" ", "_")
 
         if discord_server_name == "None":
-            await channel.send('This bot is not meant to work in private chat. Please enter a command on a channel of a server that this bot has joined. Use the command "!help" for more info.')
+            await RuneClanBot.channel.send('This bot is not meant to work in private chat. Please enter a command on a channel of a server that this bot has joined. Use the command "!help" for more info.')
             return
         elif not test_if_clan_exists(clan_name):
-            await channel.send("The clan you are searching does not exist or is not being searched by RuneClan. Please ensure the clans name is spelled correctly.")
+            await RuneClanBot.channel.send("The clan you are searching does not exist or is not being searched by RuneClan. Please ensure the clans name is spelled correctly.")
         else:
-            if discord_server_name not in chain(*list_of_clan_server_tuples):
-                list_of_clan_server_tuples.append((discord_server_name, clan_name))
+            if discord_server_name not in chain(*RuneClanBot.list_of_clan_server_tuples):
+                RuneClanBot.list_of_clan_server_tuples.append((discord_server_name, clan_name))
                 with open(stored_clan_tuples, 'a') as output_file:
                     output_file.write(f'{discord_server_name},{clan_name}\n')
             else:
@@ -376,21 +384,21 @@ async def on_message(message):
                     if not line.startswith(discord_server_name + ","):
                         file.write(line)
                 file.close()
-                temp_list_of_clan_server_tuples = [(server, name) for (server, name) in list_of_clan_server_tuples if server != discord_server_name]
-                list_of_clan_server_tuples = temp_list_of_clan_server_tuples
-                list_of_clan_server_tuples.append((discord_server_name, clan_name))
+                temp_list_of_clan_server_tuples = [(server, name) for (server, name) in RuneClanBot.list_of_clan_server_tuples if server != discord_server_name]
+                RuneClanBot.list_of_clan_server_tuples = temp_list_of_clan_server_tuples
+                RuneClanBot.list_of_clan_server_tuples.append((discord_server_name, clan_name))
                 with open(stored_clan_tuples, 'a') as output_file:
                     output_file.write(f'{discord_server_name},{clan_name}\n')
 
-            clan_name_to_type = re.split("!setclan", sent_message, flags=re.IGNORECASE)[1].strip()
+            clan_name_to_type = re.split("!setclan", RuneClanBot.sent_message, flags=re.IGNORECASE)[1].strip()
 
-            await channel.send("This bot is now searching " + clan_name_to_type + "'s RuneClan page.")
+            await RuneClanBot.channel.send("This bot is now searching " + clan_name_to_type + "'s RuneClan page.")
 
-    for server, name_of_clan in list_of_clan_server_tuples:
+    for server, name_of_clan in RuneClanBot.list_of_clan_server_tuples:
         if server == str(message.guild):
-            clan_name = name_of_clan
+            RuneClanBot.clan_name = name_of_clan
             try:
-                command = list_of_commands[sent_message.lower().rsplit(" top", 1)[0].strip()]
+                command = list_of_commands[RuneClanBot.sent_message.lower().rsplit(" top", 1)[0].strip()]
                 await command()
             except KeyError:
                 pass
@@ -398,8 +406,8 @@ async def on_message(message):
             return
 
     for message in list(list_of_commands.keys()):
-        if sent_message.lower().startswith(message):
-            await channel.send("This command isn't recognized. Please ensure you have used the '!setclan' command for this server.")
+        if RuneClanBot.sent_message.lower().startswith(message):
+            await RuneClanBot.channel.send("This command isn't recognized. Please ensure you have used the '!setclan' command for this server.")
 
 
 if __name__ == '__main__':
