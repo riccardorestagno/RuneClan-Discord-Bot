@@ -390,6 +390,7 @@ async def on_message(message):
 
     if RuneClanBot.sent_message.lower() == "!help":
         await get_bots_commands()
+        return
 
     if not RuneClanBot.list_of_clan_server_tuples:
         RuneClanBot.list_of_clan_server_tuples = open_external_file(stored_clan_tuples_file)
