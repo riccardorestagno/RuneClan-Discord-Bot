@@ -7,7 +7,7 @@ from helper_methods import *
 client = discord.Client()
 
 text_files_path = environ["RUNECLANBOT_TEXT_FILES_PATH"]
-stored_clan_tuples = f"{text_files_path}\\ClanServerTuples.txt"
+stored_clan_tuples_file = f"{text_files_path}\\ClanServerTuples.txt"
 arrow = u"\u2192"
 
 
@@ -15,16 +15,53 @@ class RuneClanBot:
 
     channel = None
     clan_name = ""
-    discord_server_name = ""
     list_of_clan_server_tuples = []
     sent_message = ""
 
-    def __init__(self, channel, clan_name, discord_server_name, list_of_clan_server_tuples, sent_message):
+    def __init__(self, channel, clan_name, list_of_clan_server_tuples, sent_message):
         self.channel = channel
         self.clan_name = clan_name
-        self.discord_server_name = discord_server_name
         self.list_of_clan_server_tuples = list_of_clan_server_tuples
         self.sent_message = sent_message
+
+
+def set_clan(server):
+    if not server:
+        return 'This bot is not meant to work in private chat. Please enter a command on a channel of a server that this bot has joined. Use the command "!help" for more info.'
+
+    discord_server_id = str(server.id)
+    clan_name = re.split("!setclan", RuneClanBot.sent_message, flags=re.IGNORECASE)[1].strip().replace(" ", "_")
+
+    if not test_if_clan_exists(clan_name):
+        return "The clan you are searching does not exist or is not being tracked by RuneClan. Please ensure the clans name is spelled correctly."
+    else:
+        if discord_server_id not in chain(*RuneClanBot.list_of_clan_server_tuples):
+            RuneClanBot.list_of_clan_server_tuples.append((discord_server_id, clan_name))
+            with open(stored_clan_tuples_file, 'a') as output_file:
+                output_file.write(f'{discord_server_id},{clan_name}\n')
+        else:
+            file = open(stored_clan_tuples_file, "r")
+            lines = file.readlines()
+            file.close()
+            file = open(stored_clan_tuples_file, "w")
+            for line in lines:
+                if not line.startswith(discord_server_id + ","):
+                    file.write(line)
+            file.close()
+
+            # Removes clan from the !setclan command from the clan server tuple list if it was already there and associates the new clan to the server
+            list_of_clan_server_tuples = [(server_id, name) for (server_id, name) in RuneClanBot.list_of_clan_server_tuples if server_id != discord_server_id]
+            list_of_clan_server_tuples.append((discord_server_id, clan_name))
+
+            RuneClanBot.list_of_clan_server_tuples = list_of_clan_server_tuples
+
+            with open(stored_clan_tuples_file, 'a') as output_file:
+                output_file.write(f'{discord_server_id},{clan_name}\n')
+
+        clan_name_to_type = clan_name.replace("_", " ")
+        RuneClanBot.clan_name = clan_name
+
+        return "This bot is now searching " + clan_name_to_type + "'s RuneClan page."
 
 
 @client.event
@@ -310,7 +347,7 @@ async def get_skills_of_the_month_hiscores():
 async def get_bots_commands():
     await RuneClanBot.channel.send("""RuneClan Discord bot commands:
 
-"!setclan [Clan Name]": Sets the clan you wish to search for on runeclan 
+"!setclan [Clan Name]": Sets the clan you wish to search for on RuneClan 
 
 "!help": Prints everything that you're seeing right now
 "!hiscores top [x]": Prints clans overall hiscores (default: top 15)
@@ -322,10 +359,6 @@ async def get_bots_commands():
 "!key ranks": Lists the clans key ranks
 "!events top [x]": Prints the clan event log as seen on RuneClan (default: 10 most recent)
 "!achievements top [x]": Prints the clan achievement log as seen on RuneClan (default: 10 most recent)
-"!set next event: [event]": Records a customizable event that can be printed later (can be cleared by leaving [event] empty)
-"!next event": Prints the customized event that has been previously set
-"!set upcoming events: [events]": Records customizable events that can be printed later (can be cleared by leaving [events] empty)
-"!upcoming events": Prints the customized events that have been previously set
 
 Things to note:
   1. The "top [x]" feature is optional, and the default value is used if not entered.
@@ -359,43 +392,16 @@ async def on_message(message):
         await get_bots_commands()
 
     if not RuneClanBot.list_of_clan_server_tuples:
-        RuneClanBot.list_of_clan_server_tuples = open_external_file(stored_clan_tuples)
+        RuneClanBot.list_of_clan_server_tuples = open_external_file(stored_clan_tuples_file)
 
     if RuneClanBot.sent_message.lower().startswith("!setclan"):
-        discord_server_name = str(message.guild)
-        clan_name = re.split("!setclan", RuneClanBot.sent_message, flags=re.IGNORECASE)[1].strip().replace(" ", "_")
 
-        if discord_server_name == "None":
-            await RuneClanBot.channel.send('This bot is not meant to work in private chat. Please enter a command on a channel of a server that this bot has joined. Use the command "!help" for more info.')
-            return
-        elif not test_if_clan_exists(clan_name):
-            await RuneClanBot.channel.send("The clan you are searching does not exist or is not being searched by RuneClan. Please ensure the clans name is spelled correctly.")
-        else:
-            if discord_server_name not in chain(*RuneClanBot.list_of_clan_server_tuples):
-                RuneClanBot.list_of_clan_server_tuples.append((discord_server_name, clan_name))
-                with open(stored_clan_tuples, 'a') as output_file:
-                    output_file.write(f'{discord_server_name},{clan_name}\n')
-            else:
-                file = open(stored_clan_tuples, "r")
-                lines = file.readlines()
-                file.close()
-                file = open(stored_clan_tuples, "w")
-                for line in lines:
-                    if not line.startswith(discord_server_name + ","):
-                        file.write(line)
-                file.close()
-                temp_list_of_clan_server_tuples = [(server, name) for (server, name) in RuneClanBot.list_of_clan_server_tuples if server != discord_server_name]
-                RuneClanBot.list_of_clan_server_tuples = temp_list_of_clan_server_tuples
-                RuneClanBot.list_of_clan_server_tuples.append((discord_server_name, clan_name))
-                with open(stored_clan_tuples, 'a') as output_file:
-                    output_file.write(f'{discord_server_name},{clan_name}\n')
-
-            clan_name_to_type = re.split("!setclan", RuneClanBot.sent_message, flags=re.IGNORECASE)[1].strip()
-
-            await RuneClanBot.channel.send("This bot is now searching " + clan_name_to_type + "'s RuneClan page.")
+        set_clan_message = set_clan(message.guild)
+        await RuneClanBot.channel.send(set_clan_message)
+        return
 
     for server, name_of_clan in RuneClanBot.list_of_clan_server_tuples:
-        if server == str(message.guild):
+        if server == str(message.guild.id):
             RuneClanBot.clan_name = name_of_clan
             try:
                 command = list_of_commands[RuneClanBot.sent_message.lower().rsplit(" top", 1)[0].strip()]
@@ -404,10 +410,6 @@ async def on_message(message):
                 pass
 
             return
-
-    for message in list(list_of_commands.keys()):
-        if RuneClanBot.sent_message.lower().startswith(message):
-            await RuneClanBot.channel.send("This command isn't recognized. Please ensure you have used the '!setclan' command for this server.")
 
 
 if __name__ == '__main__':
