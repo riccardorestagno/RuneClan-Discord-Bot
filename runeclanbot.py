@@ -370,21 +370,6 @@ Things to note:
 @client.event
 async def on_message(message):
 
-    list_of_commands = {
-        "!sotm": get_skills_of_the_month,
-        "!competitions": get_skills_of_the_month,
-        "!sotm hiscores": get_skills_of_the_month_hiscores,
-        "!competitions hiscores": get_skills_of_the_month_hiscores,
-        "!sotm time": get_skills_of_the_month_time_remaining,
-        "!competitions time": get_skills_of_the_month_time_remaining,
-        "!hiscores": get_clan_hiscores,
-        "!todays hiscores": get_todays_hiscores,
-        "!achievements": get_clan_achievements,
-        "!events": get_clan_event_log,
-        "!key ranks": get_key_ranks,
-        "!clan info": get_clan_info
-    }
-
     RuneClanBot.channel = message.channel
     RuneClanBot.sent_message = message.content.replace("'", "")
 
@@ -414,4 +399,20 @@ async def on_message(message):
 
 
 if __name__ == '__main__':
+
+    list_of_commands = {
+        "!sotm": get_skills_of_the_month,
+        "!competitions": get_skills_of_the_month,
+        "!sotm hiscores": get_skills_of_the_month_hiscores,
+        "!competitions hiscores": get_skills_of_the_month_hiscores,
+        "!sotm time": get_skills_of_the_month_time_remaining,
+        "!competitions time": get_skills_of_the_month_time_remaining,
+        "!hiscores": get_clan_hiscores,
+        "!todays hiscores": get_todays_hiscores,
+        "!achievements": get_clan_achievements,
+        "!events": get_clan_event_log,
+        "!key ranks": get_key_ranks,
+        "!clan info": get_clan_info
+    }
+
     client.run(environ["RUNECLANBOT_TOKEN"])
