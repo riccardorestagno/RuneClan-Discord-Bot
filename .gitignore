@@ -1,6 +1,6 @@
 .git/
 .idea/
-clan_server_mapping.txt
+app/clan_server_mapping.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -6,8 +6,7 @@ from helper_methods import *
 
 client = discord.Client()
 
-text_files_path = environ["RUNECLANBOT_CLAN_SERVER_TUPLE_TEXT_FILE_PATH"]
-stored_clan_tuples_file = f"{text_files_path}\\clan_server_mapping.txt"
+stored_clan_tuples_file = "clan_server_mapping.txt"
 arrow = u"\u2192"
 
 
