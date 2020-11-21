@@ -11,9 +11,9 @@ def soup_session(url):
     return soup
 
 
-def test_if_clan_exists(clan_name):
+def test_if_clan_exists(website, clan_name):
 
-    soup = soup_session("http://www.runeclan.com/clan/" + clan_name)
+    soup = soup_session(website + clan_name)
 
     list_to_print = ""
     for names in soup.find_all('span', attrs={'class': 'clan_subtext'}):
@@ -32,14 +32,14 @@ def open_external_file(stored_clan_tuples):
     return tmp_list_of_clan_server_tuples
 
 
-def get_active_competition_rows(clan_name):
+def get_active_competition_rows(website, clan_name):
 
-    soup = soup_session("http://www.runeclan.com/clan/" + clan_name + "/competitions")
+    soup = soup_session(website + clan_name + "/competitions")
 
     row_count = 0
     table_cell = 0
     for table in soup.find_all('table')[4:]:
-        for row_tag in soup.find_all('tr'):
+        for _ in soup.find_all('tr'):
             row = table.find_all('td')
             try:
                 if row[table_cell+2].find('span').text == "active":
@@ -51,12 +51,12 @@ def get_active_competition_rows(clan_name):
     return row_count
 
 
-def get_skills_in_clan_competition(clan_name):
+def get_skills_in_clan_competition(website, clan_name):
 
-    soup = soup_session("http://www.runeclan.com/clan/" + clan_name + "/competitions")
+    soup = soup_session(website + clan_name + "/competitions")
 
     for table in soup.find_all('table')[4:]:
-        for row in soup.find_all('tr'):
+        for _ in soup.find_all('tr'):
             return table.find_all('td')
 
     return []
