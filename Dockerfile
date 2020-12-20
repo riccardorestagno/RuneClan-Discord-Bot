@@ -3,9 +3,10 @@ FROM python:alpine
 
 LABEL Name=runeclan_discord_bot Version=0.0.1
 
-# Our bot is in app, so copy that whole folder over to /app on the container filesystem
-WORKDIR /app
-COPY app .
+# Our bot is in runeclanbot, so copy that whole folder over to /runeclanbot on the container filesystem
+WORKDIR /runeclanbot
+COPY runeclanbot .
+COPY requirements.txt .
 
 RUN apk add build-base
 

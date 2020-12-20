@@ -1,6 +1,6 @@
 .git/
 .idea/
-app/clan_server_mapping.txt
+runeclanbot/clan_server_mapping.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

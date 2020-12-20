@@ -13,7 +13,7 @@
 #
 # @client.event
 # async def get_current_event():
-#     clan_name_to_print = clan_name.replace("_", " ")
+#     clan_name_to_print = clan_name.replace('_', ' ')
 #     try:
 #         await channel.send(get_custom_event())
 #     except:

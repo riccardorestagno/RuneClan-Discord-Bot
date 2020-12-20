@@ -1,5 +1,4 @@
 import discord
-from itertools import chain
 from os import environ
 
 from helper_methods import *
@@ -25,6 +24,31 @@ class RuneClanBot:
         self.sent_message = sent_message
 
 
+def remove_clan(server):
+    if not server:
+        return 'This bot is not meant to work in private chat. Please enter a command on a channel of a server that this bot has joined. Use the command "!help" for more info.'
+
+    discord_server_id = str(server.id)
+    clan_name = re.split("!removeclan", RuneClanBot.sent_message, flags=re.IGNORECASE)[1].strip().replace(" ", "_")
+
+    if test_if_clan_exists(website, clan_name) and discord_server_id in [clan_serve_tuple[0] for clan_serve_tuple in RuneClanBot.list_of_clan_server_tuples]:
+        file = open(stored_clan_tuples_file, "r")
+        lines = file.readlines()
+        file.close()
+        file = open(stored_clan_tuples_file, "w")
+        for line in lines:
+            if not line.startswith(discord_server_id + ","):
+                file.write(line)
+        file.close()
+
+        # Removes clan from the !setclan command from the clan server tuple list if it was already there and associates the new clan to the server
+        RuneClanBot.list_of_clan_server_tuples = [(server_id, name) for (server_id, name) in RuneClanBot.list_of_clan_server_tuples if server_id != discord_server_id]
+
+        return f"This bot is no longer searching {clan_name.replace('_', ' ')}'s RuneClan page."
+
+    return "The clan you are searching does not exist or is not being tracked by your Discord server. Please ensure the clans name is spelled correctly."
+
+
 def set_clan(server):
     if not server:
         return 'This bot is not meant to work in private chat. Please enter a command on a channel of a server that this bot has joined. Use the command "!help" for more info.'
@@ -32,10 +56,8 @@ def set_clan(server):
     discord_server_id = str(server.id)
     clan_name = re.split("!setclan", RuneClanBot.sent_message, flags=re.IGNORECASE)[1].strip().replace(" ", "_")
 
-    if not test_if_clan_exists(website, clan_name):
-        return "The clan you are searching does not exist or is not being tracked by RuneClan. Please ensure the clans name is spelled correctly."
-    else:
-        if discord_server_id not in chain(*RuneClanBot.list_of_clan_server_tuples):
+    if test_if_clan_exists(website, clan_name):
+        if discord_server_id not in [clan_serve_tuple[0] for clan_serve_tuple in RuneClanBot.list_of_clan_server_tuples]:
             RuneClanBot.list_of_clan_server_tuples.append((discord_server_id, clan_name))
             with open(stored_clan_tuples_file, 'a') as output_file:
                 output_file.write(f'{discord_server_id},{clan_name}\n')
@@ -58,10 +80,11 @@ def set_clan(server):
             with open(stored_clan_tuples_file, 'a') as output_file:
                 output_file.write(f'{discord_server_id},{clan_name}\n')
 
-        clan_name_to_type = clan_name.replace("_", " ")
         RuneClanBot.clan_name = clan_name
 
-        return "This bot is now searching " + clan_name_to_type + "'s RuneClan page."
+        return f"This bot is now searching {clan_name.replace('_', ' ')}'s RuneClan page."
+
+    return "The clan you are searching does not exist or is not being tracked by RuneClan. Please ensure the clans name is spelled correctly.",
 
 
 @client.event
@@ -71,7 +94,6 @@ async def get_clan_event_log():
 
     events = ""
     events_counter = 0
-    event_list_end = False
 
     list_count_requested = get_requested_list_count(RuneClanBot.sent_message, 40, 10)
 
@@ -83,7 +105,7 @@ async def get_clan_event_log():
 
     for events_table in soup.find_all(attrs={'class': 'clan_event_box'})[0:events_to_print]:
         if " XP" in events_table.text or re.match("([0-9]{2,3} [A-Z][a-z]+)", events_table.text):
-            event_list_end = True
+            events = f"Only {str(events_counter)} events are currently recorded on {RuneClanBot.clan_name.replace('_', ' ')}'s RuneClan page:\n\n" + events
             break
 
         events += events_table.text + "\n"
@@ -91,9 +113,6 @@ async def get_clan_event_log():
 
     events = events.replace(".", " " + arrow + " ")
     events = events.replace("!", " " + arrow + " ")
-
-    if event_list_end:
-        events = "Only " + str(events_counter) + " events are currently recorded on " + RuneClanBot.clan_name.replace("_", " ") + "'s RuneClan page:\n\n" + events
 
     await RuneClanBot.channel.send(events)
 
@@ -104,7 +123,6 @@ async def get_clan_achievements():
     soup = soup_session(website + RuneClanBot.clan_name)
 
     achievements = ""
-    clan_name_to_print = RuneClanBot.clan_name.replace("_", " ")
     index = 0
     total_achievements_displayed = 0
     list_count_requested = get_requested_list_count(RuneClanBot.sent_message, 40, 10)
@@ -130,7 +148,7 @@ async def get_clan_achievements():
     achievements = re.sub("([0-9]{2,3} [A-Z][a-z]+)", r"\1" + " " + arrow + " ", achievements)
 
     if total_achievements_displayed != achievements_to_print:
-        achievements = "Only " + str(total_achievements_displayed) + " clan achievements are currently recorded on " + clan_name_to_print + "'s RuneClan page:\n\n" + achievements
+        achievements = f"Only {str(total_achievements_displayed)} clan achievements are currently recorded on {RuneClanBot.clan_name.replace('_', ' ')}'s RuneClan page:\n\n" + achievements
 
     await RuneClanBot.channel.send(achievements)
 
@@ -140,7 +158,6 @@ async def get_clan_hiscores():
 
     soup = soup_session(website + RuneClanBot.clan_name + "/hiscores")
 
-    clan_name_to_print = RuneClanBot.clan_name.replace("_", " ")
     table_cell = 0
     list_to_print = ""
 
@@ -162,7 +179,7 @@ async def get_clan_hiscores():
             else:
                 table_cell += 4
 
-    list_to_print = clan_name_to_print + "'s Overall Hiscores:\n\n" + list_to_print
+    list_to_print = f"{RuneClanBot.clan_name.replace('_', ' ')}'s Overall Hiscores:\n\n" + list_to_print
 
     await RuneClanBot.channel.send(list_to_print)
 
@@ -185,7 +202,7 @@ async def get_clan_info():
 
     soup = soup_session(website + RuneClanBot.clan_name)
 
-    list_to_print = RuneClanBot.clan_name.replace("_", " ") + " - Clan Info:\n"
+    list_to_print = RuneClanBot.clan_name.replace('_', ' ') + " - Clan Info:\n"
 
     for clan_info in soup.find_all('span', attrs={'class': 'clan_subtext'}):
         list_to_print += clan_info.text + " " + clan_info.next_sibling + "\n"  # next sibling prints out untagged text
@@ -212,8 +229,11 @@ async def get_todays_hiscores():
     for row_cell in table.find_all('tr')[1:]:
         row = row_cell.find_all('td')
 
+        if not row:
+            break
+
         if "Clan Total" == row[1].text:
-            todays_hiscores += RuneClanBot.clan_name.replace("_", " ") + "'s Total Xp for Today: " + row[2].text + " xp\n\n"
+            todays_hiscores += RuneClanBot.clan_name.replace('_', ' ') + "'s Total Xp for Today: " + row[2].text + " xp\n\n"
             continue
 
         # Prevents row duplication.
@@ -238,7 +258,7 @@ async def get_skills_of_the_month_time_remaining():
     time_left = ""
 
     if competition_rows == 0:
-        await RuneClanBot.channel.send(RuneClanBot.clan_name.replace("_", " ") + " has no active competitions at this time.")
+        await RuneClanBot.channel.send(RuneClanBot.clan_name.replace('_', ' ') + " has no active competitions at this time.")
     else:
         row = None
         for table in soup.find_all('table')[4:]:
@@ -260,12 +280,11 @@ async def get_skills_of_the_month():
     soup = soup_session(website + RuneClanBot.clan_name + "/competitions")
 
     active_competition_rows = get_active_competition_rows(website, RuneClanBot.clan_name)
-    clan_name_to_print = RuneClanBot.clan_name.replace("_", " ")
     row_index = 0
     skills_to_print = ""
 
     if active_competition_rows == 0:
-        await RuneClanBot.channel.send(clan_name_to_print + " has no active competitions at this time.")
+        await RuneClanBot.channel.send(RuneClanBot.clan_name.replace('_', ' ') + " has no active competitions at this time.")
     else:
         row = None
         for table in soup.find_all('table')[4:]:
@@ -275,7 +294,6 @@ async def get_skills_of_the_month():
             while active_competition_rows > 0:
                 if row[row_index+2].find('span').text == "active":
                     skills_to_print += row[row_index+1].text + ", "
-                no_of_rows -= 1
                 row_index += 5
 
         await RuneClanBot.channel.send(skills_to_print[:-2])
@@ -289,7 +307,6 @@ async def get_skills_of_the_month_hiscores():
     table = soup.find_all('td', {'class': 'competition_td competition_name'})
     skills_of_the_month = get_skills_in_clan_competition(website, RuneClanBot.clan_name)
     active_competition_rows = get_active_competition_rows(website, RuneClanBot.clan_name)
-    clan_name_to_print = RuneClanBot.clan_name.replace("_", " ")
 
     list_count_requested = get_requested_list_count(RuneClanBot.sent_message, 10, 5)
 
@@ -306,7 +323,7 @@ async def get_skills_of_the_month_hiscores():
     skill_header_count = 0
     skill_count = 0
     if active_competition_rows == 0:
-        await RuneClanBot.channel.send(clan_name_to_print + " has no active competitions at this time.")
+        await RuneClanBot.channel.send(RuneClanBot.clan_name.replace('_', ' ') + " has no active competitions at this time.")
     else:
         for row in table:
             for link in row.find_all('a', href=True):
@@ -316,7 +333,7 @@ async def get_skills_of_the_month_hiscores():
                 row_index = 0
                 for table in soup.find_all('table')[3:]:
                     while skill_header_count < active_competition_rows:
-                        list_of_skills.append(f"{clan_name_to_print}'s competition hiscores:\n {skills_of_the_month[1+skill_count].text}")
+                        list_of_skills.append(f"{RuneClanBot.clan_name.replace('_', ' ')}'s competition hiscores:\n {skills_of_the_month[1+skill_count].text}")
                         skill_header_count += 1
                         skill_count += 5
                     try:
@@ -384,10 +401,16 @@ async def on_message(message):
     if not RuneClanBot.list_of_clan_server_tuples:
         RuneClanBot.list_of_clan_server_tuples = open_external_file(stored_clan_tuples_file)
 
-    if RuneClanBot.sent_message.lower().startswith("!setclan"):
+    if RuneClanBot.sent_message.lower().startswith("!setclan "):
 
         set_clan_message = set_clan(message.guild)
         await RuneClanBot.channel.send(set_clan_message)
+        return
+
+    elif RuneClanBot.sent_message.lower().startswith("!removeclan "):
+
+        remove_clan_message = remove_clan(message.guild)
+        await RuneClanBot.channel.send(remove_clan_message)
         return
 
     for server, name_of_clan in RuneClanBot.list_of_clan_server_tuples:
