@@ -1,0 +1,12 @@
+version: '1.0'
+
+services:
+  runeclan_discord_bot:
+    image: riccardorestagno/runeclan_discord_bot
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - runeclanbot:/clanfile
+volumes:
+  runeclanbot:
+    external: false

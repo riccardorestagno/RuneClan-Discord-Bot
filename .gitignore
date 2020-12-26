@@ -1,6 +1,6 @@
 .git/
 .idea/
-runeclanbot/clan_server_mapping.txt
+clan_server_mapping.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -138,4 +138,3 @@ dmypy.json
 !.vscode/launch.json
 !.vscode/extensions.json
 *.code-workspace
-docker-compose.yml
