@@ -306,7 +306,7 @@ async def get_bots_commands():
 
 "!setclan [Clan Name]": Sets the clan you wish to search for on RuneClan 
 
-"!help": Prints everything that you're seeing right now
+"!help": Prints everything that you're seeing right now TEST
 "!hiscores top [x]": Prints clans overall hiscores (default: top 15)
 "!todays hiscores top [x]": Prints clans overall hiscores for today (default: top 10)
 "!competitions": Lists the currently active competitions on RuneClan
