@@ -19,7 +19,7 @@ def get_clan_server_mapping():
 
 def clan_exists(clan_name):
     """
-    Checks if clan name entered can be found on runeclan.com.
+    Checks if clan name entered can be found on https://www.runeclan.com.
     Returns True if clan exists. Returns False otherwise.
     """
 
