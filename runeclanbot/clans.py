@@ -1,10 +1,10 @@
 import re
-from os import getcwd, mkdir, path
+from os import getcwd, makedirs, path
 
 from helper_methods import soup_session
 
 
-CLAN_SERVER_MAPPING_FILE = getcwd() + "clanfile/clan_server_mapping.txt"
+CLAN_SERVER_MAPPING_FILE = getcwd() + "/clanfile/clan_server_mapping.txt"
 
 
 def get_clan_server_mapping():
@@ -86,9 +86,9 @@ def set_clan(server, clan_name, clan_server_tuples):
 def clan_server_management(server, sent_message, clan_server_tuples):
 
     # Creates clan server mapping directory/file if it doesn't yet exist.
-    if not path.isdir(CLAN_SERVER_MAPPING_FILE.rsplit('/', 1)[0] + '/'):
+    if not path.exists(CLAN_SERVER_MAPPING_FILE):
         # Creates directory.
-        mkdir(CLAN_SERVER_MAPPING_FILE.rsplit('/', 1)[0] + '/')
+        makedirs(CLAN_SERVER_MAPPING_FILE.rsplit('/', 1)[0] + '/')
 
         # Creates clan server mapping file at specified location.
         with open(CLAN_SERVER_MAPPING_FILE, 'w'):
