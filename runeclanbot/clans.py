@@ -8,6 +8,8 @@ CLAN_SERVER_MAPPING_FILE = getcwd() + "/clanfile/clan_server_mapping.txt"
 
 
 def get_clan_server_mapping():
+    """Reads clan server mapping file and returns its contents as a list of tuples."""
+
     with open(CLAN_SERVER_MAPPING_FILE, "r") as file:
         clan_server_tuples = []
         for line in file.readlines():
