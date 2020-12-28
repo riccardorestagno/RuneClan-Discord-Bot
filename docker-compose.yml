@@ -7,3 +7,5 @@ services:
     env_file: .env
     volumes:
       - runeclanbot:/runeclanbot/clanfile
+volumes:
+  runeclanbot:

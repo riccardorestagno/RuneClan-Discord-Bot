@@ -88,7 +88,7 @@ def clan_server_management(server, sent_message, clan_server_tuples):
     # Creates clan server mapping directory/file if it doesn't yet exist.
     if not path.exists(CLAN_SERVER_MAPPING_FILE):
         # Creates directory.
-        makedirs(CLAN_SERVER_MAPPING_FILE.rsplit('/', 1)[0] + '/')
+        makedirs(CLAN_SERVER_MAPPING_FILE.rsplit('/', 1)[0] + '/', exist_ok=True)
 
         # Creates clan server mapping file at specified location.
         with open(CLAN_SERVER_MAPPING_FILE, 'w'):
