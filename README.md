@@ -14,7 +14,6 @@ Supported Python versions: 3.6.0+
 
 - BeautifulSoup4 (https://www.crummy.com/software/BeautifulSoup/)
 - discord.py (https://pypi.python.org/pypi/discord.py/) 
-- Pandas (https://pandas.pydata.org/)
 
 
 Usage

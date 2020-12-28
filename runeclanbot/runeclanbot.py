@@ -344,8 +344,9 @@ async def on_message(message):
             await RuneClanBot.channel.send(clan_management_message)
             return
 
-    if message.guild and message.guild.id in RuneClanBot.clan_server_dict:
-        RuneClanBot.clan_name = RuneClanBot.clan_server_dict[message.guild.id]
+    discord_server_id = str(message.guild.id)
+    if message.guild and discord_server_id in RuneClanBot.clan_server_dict:
+        RuneClanBot.clan_name = RuneClanBot.clan_server_dict[discord_server_id]
         try:
             command = list_of_commands[RuneClanBot.sent_message.lower().rsplit(" top", 1)[0].strip()]
             await command()
