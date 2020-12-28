@@ -335,23 +335,25 @@ async def on_message(message):
         await get_bots_commands()
         return
 
-    if not RuneClanBot.clan_server_dict or RuneClanBot.sent_message.lower().startswith(("!setclan ", "!removeclan")):
-        clan_management_message = clan_server_management(message.guild, RuneClanBot.sent_message)
+    if message.guild:
+        discord_server_id = str(message.guild.id)
 
-        RuneClanBot.clan_server_dict = get_clan_server_dict()
+        if not RuneClanBot.clan_server_dict or RuneClanBot.sent_message.lower().startswith(("!setclan ", "!removeclan")):
+            clan_management_message = clan_server_management(discord_server_id, RuneClanBot.sent_message)
 
-        if clan_management_message:
-            await RuneClanBot.channel.send(clan_management_message)
-            return
+            RuneClanBot.clan_server_dict = get_clan_server_dict()
 
-    discord_server_id = str(message.guild.id)
-    if message.guild and discord_server_id in RuneClanBot.clan_server_dict:
-        RuneClanBot.clan_name = RuneClanBot.clan_server_dict[discord_server_id]
-        try:
-            command = list_of_commands[RuneClanBot.sent_message.lower().rsplit(" top", 1)[0].strip()]
-            await command()
-        except KeyError:
-            pass
+            if clan_management_message:
+                await RuneClanBot.channel.send(clan_management_message)
+                return
+
+        if discord_server_id in RuneClanBot.clan_server_dict:
+            RuneClanBot.clan_name = RuneClanBot.clan_server_dict[discord_server_id]
+            try:
+                command = list_of_commands[RuneClanBot.sent_message.lower().rsplit(" top", 1)[0].strip()]
+                await command()
+            except KeyError:
+                pass
 
 
 if __name__ == '__main__':

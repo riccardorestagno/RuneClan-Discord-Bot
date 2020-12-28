@@ -4,6 +4,7 @@ from os import getcwd, makedirs, path
 
 from helper_methods import soup_session
 
+
 CLAN_SERVER_MAPPING_FILE = getcwd() + "/clanfile/clan_server_mapping.csv"
 
 
@@ -74,7 +75,7 @@ def set_clan(discord_server_id, clan_name):
     return "The clan you are searching does not exist or is not being tracked by RuneClan. Please ensure the clans name is spelled correctly."
 
 
-def clan_server_management(server, sent_message):
+def clan_server_management(discord_server_id, sent_message):
     """Manages the clan server mapping file based on the command the user entered."""
 
     # Creates clan server mapping directory/file if it doesn't yet exist.
@@ -86,8 +87,6 @@ def clan_server_management(server, sent_message):
 
         with open(CLAN_SERVER_MAPPING_FILE, 'w'):
             pass
-
-    discord_server_id = str(server.id)
 
     if sent_message.lower().startswith("!setclan "):
         clan_name = re.split("!setclan", sent_message, flags=re.IGNORECASE)[1].strip().replace(" ", "_")
