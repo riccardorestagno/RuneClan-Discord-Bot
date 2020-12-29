@@ -1,16 +1,24 @@
-# Based on Python
-FROM python:alpine
+# Multi-stage build to reduce image size
+# https://snorfalorpagus.net/blog/2019/07/30/multi-stage-docker-builds-for-python-apps/
 
-LABEL Name=runeclan_discord_bot Version=0.0.1
+FROM python:alpine AS compile-image
 
-# Our bot is in runeclanbot, so copy that whole folder over to /runeclanbot on the container filesystem
-WORKDIR /runeclanbot
-COPY runeclanbot .
-COPY requirements.txt .
+WORKDIR /opt/runeclanbot
 
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH" VIRTUAL_ENV="/opt/venv"
+
+COPY requirements.txt /opt/runeclanbot/
 RUN apk add build-base
-
-# Using pip:
 RUN python3 -m pip install -r requirements.txt
+
+
+FROM python:alpine AS build-image
+
+COPY --from=compile-image /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH" VIRTUAL_ENV="/opt/venv"
+
+COPY runeclanbot /opt/runeclanbot/
+WORKDIR /opt/runeclanbot
 # Start bot
 CMD ["python3", "-u", "./runeclanbot.py"]
