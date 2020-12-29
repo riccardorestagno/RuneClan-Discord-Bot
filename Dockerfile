@@ -10,8 +10,11 @@ RUN /opt/venv/bin/python3 -m pip install --upgrade pip
 ENV PATH="/opt/venv/bin:$PATH" VIRTUAL_ENV="/opt/venv"
 
 COPY requirements.txt /opt/runeclanbot/
-RUN apk add build-base
-RUN python3 -m pip install -r requirements.txt
+
+# Add build-base build dependency then remove it once package installs are complete.
+RUN apk add --no-cache --virtual builddeps build-base && \
+    python3 -m pip install -r requirements.txt && \
+    apk del builddeps
 
 
 FROM python:alpine AS build-image
