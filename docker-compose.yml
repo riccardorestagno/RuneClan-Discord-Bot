@@ -6,6 +6,6 @@ services:
     restart: unless-stopped
     env_file: .env
     volumes:
-      - runeclanbot:/runeclanbot/clanfile
+      - runeclanbot:/opt/runeclanbot/clanfile
 volumes:
   runeclanbot:
