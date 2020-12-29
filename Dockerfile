@@ -6,6 +6,7 @@ FROM python:alpine AS compile-image
 WORKDIR /opt/runeclanbot
 
 RUN python3 -m venv /opt/venv
+RUN /opt/venv/bin/python3 -m pip install --upgrade pip
 ENV PATH="/opt/venv/bin:$PATH" VIRTUAL_ENV="/opt/venv"
 
 COPY requirements.txt /opt/runeclanbot/
@@ -20,5 +21,6 @@ ENV PATH="/opt/venv/bin:$PATH" VIRTUAL_ENV="/opt/venv"
 
 COPY runeclanbot /opt/runeclanbot/
 WORKDIR /opt/runeclanbot
+
 # Start bot
 CMD ["python3", "-u", "./runeclanbot.py"]
